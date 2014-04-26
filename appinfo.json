@@ -1,0 +1,18 @@
+{
+    "uuid": "49af7b7f-4fab-4f7b-9584-a83dd95008a9",
+    "resources": {
+        "media": []
+    },
+    "capabilities": [
+        ""
+    ],
+    "companyName": "gabe1118@yahoo.com",
+    "shortName": "hackbu",
+    "longName": "hackbu",
+    "watchapp": {
+        "watchface": false
+    },
+    "versionCode": 1,
+    "appKeys": {},
+    "versionLabel": "1.0"
+}
