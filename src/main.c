@@ -10,13 +10,13 @@ void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, 
     switch(cell_index->row)
     {
     case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "1. Apple", "Green and crispy!", NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Capitals", "Know your Capitals!", NULL);
         break;
     case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "2. Orange", "Peel first!", NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Celebrities", "Know your Celebs!", NULL);
         break;
     case 2:
-        menu_cell_basic_draw(ctx, cell_layer, "3. Pear", "Teardrop shaped!", NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Baseball", "Know your Ballparks!", NULL);
         break;
     }
 }
