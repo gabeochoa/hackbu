@@ -1,23 +1,23 @@
 {
-    "uuid": "1579eb3b-2b90-47e1-ba47-96741b7b3012",
-    "resources": {
-        "media": []
+    "companyName": "christopherzhang3@gmail.com",
+    "appKeys": {
+        "KEY_QDESCRIPTION": 1,
+        "KEY_CANSA": 2,
+        "KEY_WANS": 3,
+        "KEY_QNAME": 0
     },
     "capabilities": [
         ""
     ],
-    "companyName": "christopherzhang3@gmail.com",
-    "shortName": "fetch",
+    "resources": {
+        "media": []
+    },
+    "uuid": "1579eb3b-2b90-47e1-ba47-96741b7b3012",
+    "versionCode": 1,
     "longName": "fetch",
+    "shortName": "fetch",
+    "versionLabel": "1.0",
     "watchapp": {
         "watchface": false
-    },
-    "versionCode": 1,
-    "appKeys": {
-        "KEY_QDESCRIPTION": 1,
-        "KEY_WANS": 3,
-        "KEY_CANSA": 2,
-        "KEY_QNAME": 0
-    },
-    "versionLabel": "1.0"
+    }
 }
