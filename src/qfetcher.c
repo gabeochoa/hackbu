@@ -3,9 +3,14 @@
 Window* window;
 
 MenuLayer * menu_layer;
-
+MenuLayer *ansmenu_layer;
 //TextLayer *layer_q_name, *layer_q_descr, *layer_q_a1, *layer_q_a2, *layer_q_a3, *layer_q_a4;
 char q_name_buffer[16], q_descr_buffer[32], ansA[16], ansB[16], ansC[16], ansD[16];
+char *first;
+char *second;
+char *third;
+char *fourth;
+char *correct;
 
 enum {
     KEY_QNAME = 0,
@@ -86,23 +91,49 @@ void draw_ansrow_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_inde
         */
             
     case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "A", (char*) &ansA, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "A", (char *) first, NULL);
         break;
     case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "B", (char*) &ansB, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "B", (char*) second, NULL);
         break;
     case 2:
-        menu_cell_basic_draw(ctx, cell_layer, "C", (char*) &ansC, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "C", (char*) third, NULL);
         break;
     case 3:
-        menu_cell_basic_draw(ctx, cell_layer, "D", (char*) &ansD, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "D", (char*) fourth, NULL);
         break;
     }
 }
 
-char * getRandomChoice() {
-    int seed = rand() % 3;
-    
+void initRandomChoice() {
+    int randomno = rand() % 4;
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "random no %d", randomno); 
+    switch (randomno) {
+    case 0:
+        correct = first = ansA;
+        second = ansB;
+        third = ansC;
+        fourth = ansD;
+        break;
+    case 1:
+        correct = second = ansA;
+        first = ansB;
+        third = ansC;
+        fourth = ansD;
+        break;
+    case 2:
+        correct = third = ansA;
+        first = ansC;
+        second = ansB;
+        fourth = ansD;
+        break;
+    case 3:
+        correct = fourth = ansA;
+        first = ansD;
+        second = ansB;
+        third = ansC;
+        break;
+    }
 }
 
 uint16_t num_ansrows_callback(MenuLayer *menu_layer, uint16_t section_index, void *callback_context) {
@@ -142,7 +173,7 @@ void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *c
 {   
     Window *question_window;
     TextLayer *text_layer;
-    MenuLayer *ansmenu_layer;
+    //MenuLayer *ansmenu_layer;
     // Create a window and text layer
 	question_window = window_create();
 	text_layer = text_layer_create(GRect(0, 0, 144, 154));
@@ -160,13 +191,18 @@ void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *c
     //Let it receive clicks
     menu_layer_set_click_config_onto_window(ansmenu_layer, question_window);
  
+    
+    
     //Give it its callbacks
     MenuLayerCallbacks callbacks = {
         .draw_row = (MenuLayerDrawRowCallback) draw_ansrow_callback,
         .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback) num_ansrows_callback,
         .select_click = (MenuLayerSelectCallback) select_ansclick_callback
     };
+    
     menu_layer_set_callbacks(ansmenu_layer, NULL, callbacks);
+    
+    
     
     //Add to Window
     layer_add_child(window_get_root_layer(question_window), menu_layer_get_layer(ansmenu_layer));
@@ -314,6 +350,7 @@ void window_unload(Window *window)
   text_layer_destroy(layer_q_a2);
   text_layer_destroy(layer_q_a3);
   text_layer_destroy(layer_q_a4); */
+    menu_layer_destroy(ansmenu_layer);
     menu_layer_destroy(menu_layer);
 }
 
@@ -326,6 +363,7 @@ void init()
   };
   window_set_window_handlers(window, handlers);
  
+    initRandomChoice();
   //Register AppMessage events
 app_message_register_inbox_received(in_received_handler);           
 app_message_open(512, 512);    //Large input and output buffer sizes
