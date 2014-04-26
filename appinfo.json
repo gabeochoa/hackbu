@@ -1,18 +1,23 @@
 {
-    "uuid": "1361b1d1-628b-4f4a-989f-dcdf7c3f6e42",
+    "uuid": "1579eb3b-2b90-47e1-ba47-96741b7b3012",
     "resources": {
         "media": []
     },
     "capabilities": [
         ""
     ],
-    "companyName": "brianxk93@gmail.com",
-    "shortName": "hackbu2",
-    "longName": "hackbu2",
+    "companyName": "christopherzhang3@gmail.com",
+    "shortName": "fetch",
+    "longName": "fetch",
     "watchapp": {
         "watchface": false
     },
     "versionCode": 1,
-    "appKeys": {},
+    "appKeys": {
+        "KEY_QDESCRIPTION": 1,
+        "KEY_WANS": 3,
+        "KEY_CANSA": 2,
+        "KEY_QNAME": 0
+    },
     "versionLabel": "1.0"
 }
