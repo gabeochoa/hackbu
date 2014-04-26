@@ -11,6 +11,13 @@ char *second;
 char *third;
 char *fourth;
 char *correct;
+int correctPos = 0;
+//Array of String Answers, add by strcpy(ansArr[0], "blah");
+//Ansarr[MAX_NUMBER_STRINGS][MAX_STRING_SIZE]
+//Max 10 strings with size of 25
+//char ansArr[10][25];
+//int ansCount = 0;
+ 
 
 enum {
     KEY_QNAME = 0,
@@ -111,24 +118,28 @@ void initRandomChoice() {
     switch (randomno) {
     case 0:
         correct = first = ansA;
+        correctPos = 0;
         second = ansB;
         third = ansC;
         fourth = ansD;
         break;
     case 1:
         correct = second = ansA;
+        correctPos = 1;
         first = ansB;
         third = ansC;
         fourth = ansD;
         break;
     case 2:
         correct = third = ansA;
+        correctPos = 2;
         first = ansC;
         second = ansB;
         fourth = ansD;
         break;
     case 3:
         correct = fourth = ansA;
+        correctPos = 3;
         first = ansD;
         second = ansB;
         third = ansC;
@@ -144,15 +155,17 @@ uint16_t num_ansrows_callback(MenuLayer *menu_layer, uint16_t section_index, voi
 void select_ansclick_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     //Get which row
     int which = cell_index->row;
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Row num %d", which);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Correct num %d", correctPos);
  
     //The array that will hold the on/off vibration times
     uint32_t segments[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
  
     //Build the pattern (milliseconds on and off in alternating positions)
-    for(int i = 0; i < which + 1; i++)
+    for(int i = 0; i < 1; i++)
     {
-        segments[2 * i] = 200;
-        segments[(2 * i) + 1] = 100;
+         segments[2 * i] = 600;
+         //segments[(2 * i) + 1] = 100;
     }
  
     //Create a VibePattern data structure
@@ -160,9 +173,13 @@ void select_ansclick_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void
         .durations = segments,
         .num_segments = 16
     };
- 
-    //Do the vibration pattern!
-    vibes_enqueue_custom_pattern(pattern);
+   if(correctPos == which){
+     //Tell them they are correct! Right answer
+   }
+   else{
+     //Do the vibration pattern as punishment for getting it wrong
+      vibes_enqueue_custom_pattern(pattern);
+   }
 }
 
 
