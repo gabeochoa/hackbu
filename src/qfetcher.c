@@ -1,9 +1,21 @@
 #include <pebble.h>
-
+#include <qfetcher.h>
+	
 Window* window;
 
 MenuLayer * menu_layer;
-MenuLayer *ansmenu_layer;
+
+Window *question_window;
+MenuLayer *answer_layer;
+
+struct deck* capitals;
+struct deck* celebrities;
+struct deck* baseball;
+
+static struct deck *getCapitals(){return capitals;}
+static struct deck *getCelebrities(){return celebrities;}
+static struct deck *getBaseball(){return baseball;}
+
 //TextLayer *layer_q_name, *layer_q_descr, *layer_q_a1, *layer_q_a2, *layer_q_a3, *layer_q_a4;
 char q_name_buffer[16], q_descr_buffer[32], ansA[16], ansB[16], ansC[16], ansD[16];
 char *first;
@@ -12,12 +24,6 @@ char *third;
 char *fourth;
 char *correct;
 int correctPos = 0;
-//Array of String Answers, add by strcpy(ansArr[0], "blah");
-//Ansarr[MAX_NUMBER_STRINGS][MAX_STRING_SIZE]
-//Max 10 strings with size of 25
-//char ansArr[10][25];
-//int ansCount = 0;
- 
 
 enum {
     KEY_QNAME = 0,
@@ -25,6 +31,21 @@ enum {
     KEY_CANSA = 2,
     KEY_WANS = 3
 };
+
+static void send_category(MenuIndex cell_index) {
+  Tuplet value = TupletInteger(1, cell_index.row);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "inside send category %d" ,cell_index.row);
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  if (iter == NULL) {
+    return;
+  }
+
+  dict_write_tuplet(iter, &value);
+  dict_write_end(iter);
+  app_message_outbox_send();
+}
 
 void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
@@ -56,47 +77,6 @@ void draw_ansrow_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_inde
     //Which row is it?
     switch(cell_index->row)
     {
-        /*
-        int randpositionofcorrectans = rand() % 4;
-        
-        char * first;
-        char * second;
-        char * third;
-        char * fourth;
-        
-        first = second = third = fourth = ansA;
-        
-        switch(randpositionofcorrectans) 
-        {
-            case 0:
-                first = ansA;
-                second = ansD;
-                third = ansB;
-                fourth = ansC;
-                break;
-            case 1:
-                second = ansA;
-                first = ansD;
-                third = ansC;
-                fourth = ansB;
-                break;
-            case 2:
-                third = ansA;
-                first = ansB;
-                second = ansC;
-                fourth = ansD;
-                break;
-            case 3:
-                fourth = ansA;
-                first = ansD;
-                second = ansB;
-                third = ansC;
-                break;
-            default:
-                break;
-        }
-        */
-            
     case 0:
         menu_cell_basic_draw(ctx, cell_layer, "A", (char *) first, NULL);
         break;
@@ -181,54 +161,29 @@ void select_ansclick_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void
       vibes_enqueue_custom_pattern(pattern);
    }
 }
-
-
-
 //////////////////
 
 void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
-{   
-    Window *question_window;
-    TextLayer *text_layer;
-    //MenuLayer *ansmenu_layer;
-    // Create a window and text layer
-	question_window = window_create();
-	text_layer = text_layer_create(GRect(0, 0, 144, 154));
+{  
+	//Create new window
+ 	question_window = window_create();
+	
+	window_set_window_handlers(question_window, (WindowHandlers)
+		{
+			.load = question_window_load,
+			.unload = question_window_unload,
+	  });
+	
+	  //Create menu for ans.
+	/*
+	  answer_layer = menu_layer_create(GRect(0, 60, 144, 94));
+ 		menu_layer_set_click_config_onto_window(answer_layer, question_window);
+	  layer_add_child(window_get_root_layer(question_window), menu_layer_get_layer(answer_layer));
+		*/
 
-	// Set the text, font, and text alignment
-	text_layer_set_text(text_layer, (char*) &q_descr_buffer );//Question field from struct
-	text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-	text_layer_set_text_alignment(text_layer, GTextAlignmentLeft);
+		window_stack_push(question_window ,true);
 
-	// Add the text layer to the window
-	layer_add_child(window_get_root_layer(question_window), text_layer_get_layer(text_layer));
-    
-    ansmenu_layer = menu_layer_create(GRect(0, 60, 144, 94));
- 
-    //Let it receive clicks
-    menu_layer_set_click_config_onto_window(ansmenu_layer, question_window);
- 
-    
-    
-    //Give it its callbacks
-    MenuLayerCallbacks callbacks = {
-        .draw_row = (MenuLayerDrawRowCallback) draw_ansrow_callback,
-        .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback) num_ansrows_callback,
-        .select_click = (MenuLayerSelectCallback) select_ansclick_callback
-    };
-    
-    menu_layer_set_callbacks(ansmenu_layer, NULL, callbacks);
-    
-    
-    
-    //Add to Window
-    layer_add_child(window_get_root_layer(question_window), menu_layer_get_layer(ansmenu_layer));
-
-    
-    window_stack_push(question_window ,true);
-    
-	// App Logging!
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Just pushed a window!"); 
+	 APP_LOG(APP_LOG_LEVEL_DEBUG, "Just pushed a window!"); 
 }
 
 void process_tuple(Tuple *t)
@@ -283,22 +238,23 @@ void process_tuple(Tuple *t)
             break;
         }
     }
-      snprintf(ansD, sizeof("0123456789ABCDEF0123456789A"), "%s", string_value+Dstart);
+      snprintf(ansA, sizeof("0123456789ABCDEF0123456789A"), "%s", string_value+Dstart);
       APP_LOG(APP_LOG_LEVEL_DEBUG, "wrong choice B: %s", (char*) &ansB);
       APP_LOG(APP_LOG_LEVEL_DEBUG, "wrong choice C: %s", (char*) &ansC);
       APP_LOG(APP_LOG_LEVEL_DEBUG, "wrong choice D: %s", (char*) &ansD);
+		
   }
 }
-
 static void in_received_handler(DictionaryIterator *iter, void *context) 
-{
-   //Get data
+{		
+	 APP_LOG(APP_LOG_LEVEL_DEBUG, "HANDLERS");
+  
+	//Get data
   Tuple *t = dict_read_first(iter);
   if(t)
   {
     process_tuple(t);
-  }
-   
+  }  
   //Get next
   while(t != NULL)
   {
@@ -317,7 +273,6 @@ void window_load(Window *window)
   text_layer_set_text(layer_q_name, "Some Title");
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(layer_q_name));
 
-    
 layer_q_descr = init_text_layer(GRect(5, 30, 144, 138), GColorBlack, GColorClear, "RESOURCE_ID_GOTHIC_18", GTextAlignmentLeft);
 text_layer_set_text(layer_q_descr, "Question Description:abcdefghijkl N/A");
 layer_add_child(window_get_root_layer(window), text_layer_get_layer(layer_q_descr));
@@ -367,8 +322,13 @@ void window_unload(Window *window)
   text_layer_destroy(layer_q_a2);
   text_layer_destroy(layer_q_a3);
   text_layer_destroy(layer_q_a4); */
-    menu_layer_destroy(ansmenu_layer);
+    menu_layer_destroy(answer_layer);
     menu_layer_destroy(menu_layer);
+}
+
+void in_dropped_handler(void *context, AppMessageResult reason)
+{
+	 APP_LOG(APP_LOG_LEVEL_DEBUG, "Dropped Message");
 }
 
 void init()
@@ -382,10 +342,14 @@ void init()
  
     initRandomChoice();
   //Register AppMessage events
-app_message_register_inbox_received(in_received_handler);           
+app_message_register_inbox_received(in_received_handler);      
 app_message_open(512, 512);    //Large input and output buffer sizes
     
   window_stack_push(window, true);
+}
+
+static void sync_error_callback(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
 }
   
 void deinit()
